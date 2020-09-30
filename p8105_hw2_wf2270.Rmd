@@ -1,0 +1,70 @@
+---
+title: "P8105 HW2"
+author: "Wenbo Fei"
+date: "9/29/2020"
+output: git_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readxl)
+```
+
+#Problem 1
+
+Read the Mr.Trashwheel dataset
+```{r P1_readdata1}
+trashwheel_df = 
+  read_xlsx("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
+            sheet = "Mr. Trash Wheel",
+            range = cell_cols("A:N")) %>%
+  janitor::clean_names() %>%
+  drop_na(dumpster) %>%
+  mutate(
+    sports_balls = round(sports_balls),
+    sports_balls = as.integer(sports_balls)
+  )
+```
+
+Read the precipitation data from 2018 and 2017
+```{r P1_readdata2}
+precip_2018 = 
+  read_xlsx(
+    "./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
+    sheet = "2018 Precipitation",
+    skip = 1
+  ) %>%
+  janitor::clean_names() %>%
+  drop_na(month) %>%
+  mutate(year = 2018) %>%
+  relocate(year)
+
+precip_2017 = 
+  read_xlsx(
+    "./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",
+    sheet = "2017 Precipitation",
+    skip = 1
+  ) %>%
+  janitor::clean_names() %>%
+  drop_na(month) %>%
+  mutate(year = 2017) %>%
+  relocate(year)
+```
+
+Now combine annual precipitation
+```{r P1binddata}
+precip_df = 
+  bind_rows(precip_2018, precip_2017)
+
+month_df = 
+  tibble(
+    month = 1:12,
+    month_name = month.name
+  )
+  
+left_join(precip_df, month_df, by = "month")
+```
+
+
+
