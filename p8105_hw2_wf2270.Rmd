@@ -77,7 +77,7 @@ The total precipitation in 2018 is `r sum(pull(precip_2018, total))`. The median
 
 # Problem 2
 
-```{r}
+```{r P2, message=FALSE}
 NYC_transit = 
   read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
   janitor::clean_names() %>%
@@ -91,6 +91,8 @@ NYC_transit =
     names_prefix = "route",
     values_to = "route_number" ) %>%
   drop_na(route_number)
+
+head(NYC_transit)
 ```
 
 
@@ -109,5 +111,57 @@ Answer questions:
 
 Route number and route name have been reformated in the data cleaning process above. There are `r nrow(distinct(filter(NYC_transit, route_number == "A"), line, station_name))` distinct stations serve the A train. Of the stations that serve the A train, `r nrow(distinct(filter(NYC_transit, route_number == "A" & ada == TRUE), line, station_name))` are ADA compliant.
 
+# Problem 3
+
+First, clean the data in pols-month.csv. Use separate() to break up the variable mon into integer variables year, month, and day; replace month number with month name; create a president variable taking values gop and dem, and remove prez_dem and prez_gop; and remove the day variable.
+
+```{r P3read1, message=FALSE}
+pols_df = 
+  read_csv("./data/fivethirtyeight_datasets/pols-month.csv") %>%
+  janitor::clean_names() %>%
+  separate(mon, into = c("year", "month", "day"), sep = "-") %>%
+  mutate_at(vars(year:day), as.integer) %>%
+  mutate(
+    month = month.name[month], # change month number to name
+    president = ifelse(prez_gop == 0,"dem","gop")) %>% #create president variable
+  subset(select = -c(prez_dem, prez_gop, day))
+```
+
+Second, clean the data in snp.csv using a similar process to the above. For consistency across datasets, arrange according to year and month, and organize so that year and month are the leading columns.
 
 
+```{r P3read2, message=FALSE}
+snp_df = 
+  read_csv("./data/fivethirtyeight_datasets/snp.csv") %>%
+  janitor::clean_names() %>%
+  separate(date, into = c("month", "day", "year"), sep = "/") %>%
+  mutate_at(vars(month:year), as.integer) %>%
+  arrange(year, month) %>%#arrange according to year and month
+  mutate(month = month.name[month]) %>% # change month number to name
+  subset(select = -day) %>%
+  relocate(year, month)
+```
+
+Third, tidy the unemployment data so that it can be merged with the previous datasets. This process will involve switching from “wide” to “long” format; ensuring that key variables have the same name; and ensuring that key variables take the same values.
+
+```{r P3read3, message=FALSE}
+month_df2 = tibble(
+    mon = month.abb,
+    month = month.name,
+    month_number = 1:12
+  )
+
+unemployment_df = 
+  read_csv("./data/fivethirtyeight_datasets/unemployment.csv") %>%
+  pivot_longer(
+    Jan:Dec,
+    names_to = "mon",
+    values_to = "unempoyment" ) %>%
+  drop_na(unempoyment) %>%
+  left_join(month_df2, by = "mon") %>%
+  janitor::clean_names() %>%
+  mutate_at("year", as.integer) %>%
+  arrange(year, month_number) %>% # arrange according to year and month
+  subset(select = -c(mon, month_number)) %>%
+  relocate(year, month)
+```
