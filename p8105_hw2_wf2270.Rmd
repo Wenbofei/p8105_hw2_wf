@@ -160,8 +160,8 @@ unemployment_df =
   pivot_longer(
     Jan:Dec,
     names_to = "mon",
-    values_to = "unempoyment" ) %>%
-  drop_na(unempoyment) %>%
+    values_to = "unemployment" ) %>%
+  drop_na(unemployment) %>%
   left_join(month_df2, by = "mon") %>%
   janitor::clean_names() %>%
   mutate_at("year", as.integer) %>%
