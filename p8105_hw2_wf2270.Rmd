@@ -2,7 +2,7 @@
 title: "P8105 HW2"
 author: "Wenbo Fei"
 date: "9/29/2020"
-output: git_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -25,6 +25,8 @@ trashwheel_df =
     sports_balls = round(sports_balls),
     sports_balls = as.integer(sports_balls)
   )
+
+head(trashwheel_df)
 ```
 
 Read the precipitation data from 2018 and 2017
@@ -63,8 +65,13 @@ month_df =
     month_name = month.name
   )
   
-left_join(precip_df, month_df, by = "month")
+precip_df = left_join(precip_df, month_df, by = "month")
+head(precip_df)
 ```
 
+The first dataset contains information from the Mr. Trashwheel trash collector in Baltimore, Maryland. As trash enters the inner harbor, the trashwheel collector collects the trash and store it in a dumpster. This dataset contained detailed information on year, month and trash collected, including some specific kinds of trash. There are a total of `r nrow(trashwheel_df)` observations in our final dataset. Each observation has a unique "dumpster" number, while the corresponding year, date, weight of trash(in tons), volume of trash(in cubic yards) and the number some specific kinds of trash will be recorded.
 
+The second dataset includes month precipitation data from year 2018 and 2017. There are a total of `r nrow(precip_df)` observations in our final dataset. Each observation includes the total precipitation corresponding to specific month and year.  
+
+The total precipitation in 2018 is `r sum(pull(precip_2018, total))`. The median number of sports balls in a dumpster in 2017 is `r median(pull(subset(trashwheel_df, year = 2017), sports_balls))`
 
