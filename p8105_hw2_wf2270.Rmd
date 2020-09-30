@@ -11,7 +11,7 @@ library(tidyverse)
 library(readxl)
 ```
 
-#Problem 1
+# Problem 1
 
 Read the Mr.Trashwheel dataset
 ```{r P1_readdata1}
@@ -75,3 +75,27 @@ The second dataset includes month precipitation data from year 2018 and 2017. Th
 
 The total precipitation in 2018 is `r sum(pull(precip_2018, total))`. The median number of sports balls in a dumpster in 2017 is `r median(pull(subset(trashwheel_df, year = 2017), sports_balls))`
 
+# Problem 2
+
+Read and clean the data; retain line, station, name, station latitude / longitude, routes served, entry, vending, entrance type, and ADA compliance. Convert the entry variable from character (YES vs NO) to a logical variable.
+```{r}
+NYC_transit = 
+  read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
+  janitor::clean_names() %>%
+  select(c(line:route11, entry, vending, entrance_type, ada)) %>%
+  mutate(entry = recode(entry, "YES" = TRUE, "NO" = FALSE),
+         vending = recode(vending, "YES" = TRUE, "NO" = FALSE)) %>%
+  mutate_at(vars(route1:route11), as.character) %>%
+  pivot_longer(
+    route1:route11,
+    names_to = "route_name",
+    names_prefix = "route",
+    values_to = "route_number" ) %>%
+  drop_na(route_number)
+```
+
+Write a short paragraph about this dataset – explain briefly what variables the dataset contains, describe your data cleaning steps so far, and give the dimension (rows x columns) of the resulting dataset. Are these data tidy?
+
+This NYC_transit dataset contains information related to each entrance and exit for each subway station in NYC, it has `r nrow(NYC_transit)` observations and `r ncol(NYC_transit)` variables in my dataset after cleaning. For each observations, there are variables describing line, station name, station latitude, station longitude, whether it's an entry, whether it has vending machine, the entrance type, whether it's ADA compliant, and the route name and route number.
+
+After reading in the data, I first clean the variables names, select my interested variables, convert the entry and vending columns into logical values. Then since the route data is spread across 11 columns, I use pivot_longer to convert route1:route11 into a route name column, with their corresponding value stored in route number column. To retain the route served, I drop those observation with route number=NA. The dimension of the resulting dataset is `r nrow(NYC_transit)` x `r ncol(NYC_transit)` , I think they are tidy now.
